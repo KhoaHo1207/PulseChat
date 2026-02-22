@@ -1,7 +1,8 @@
 import assets, { messagesDummyData } from "@/public/assets/assets";
 import { User } from "@/types/user.type";
-import { dateFormatter } from "@/utils/format";
+import { timeFormatter } from "@/utils/format";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 export default function ChatContainer({
   selectedUser,
@@ -10,6 +11,13 @@ export default function ChatContainer({
   selectedUser: User | null;
   setSelectedUser: (user: User | null) => void;
 }) {
+  const scrollEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollEndRef.current) {
+      scrollEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
   return selectedUser ? (
     <div className="relative h-full overflow-scroll backdrop-blur-lg">
       {/* header */}
@@ -43,13 +51,10 @@ export default function ChatContainer({
       </div>
       {/* chat area */}
       <div className="flex h-[calc(100%-120px)] flex-col overflow-y-scroll p-3 pb-6">
-        {messagesDummyData.map((message, index) => (
+        {messagesDummyData.map((message) => (
           <div
-            key={index}
-            className={
-              `flex items-end justify-end gap-2 ${message.senderId !== "680f50e4f10f3cd28382ecf9"}` &&
-              "flex-row-reverse"
-            }
+            key={message._id}
+            className={`flex items-end justify-end gap-2 ${message.senderId !== "680f50e4f10f3cd28382ecf9" && "flex-row-reverse"}`}
           >
             {message.image ? (
               <Image
@@ -80,11 +85,45 @@ export default function ChatContainer({
                 className="w-7 rounded-full"
               />
               <p className="text-gray-500">
-                {dateFormatter(message.createdAt)}
+                {timeFormatter(message.createdAt)}
               </p>
             </div>
           </div>
         ))}
+        <div ref={scrollEndRef}></div>
+      </div>
+      {/* Bottom Area */}
+
+      <div className="absolute right-0 bottom-0 left-0 flex items-center gap-3 p-3">
+        <div className="flex flex-1 items-center rounded-full bg-gray-100/12 px-3">
+          <input
+            type="text"
+            placeholder="Send a message..."
+            className="flex-1 rounded-lg border-none p-3 text-sm text-white placeholder-gray-400 outline-none"
+          />
+          <input
+            type="file"
+            id="upload"
+            accept="image/png, image/jpeg"
+            hidden
+          />
+          <label htmlFor="upload">
+            <Image
+              src={assets.gallery_icon}
+              alt="gallery"
+              width={100}
+              height={100}
+              className="mr-2 w-5 cursor-pointer"
+            />
+          </label>
+        </div>
+        <Image
+          src={assets.send_button}
+          alt="send"
+          width={100}
+          height={100}
+          className="w-7 cursor-pointer"
+        />
       </div>
     </div>
   ) : (

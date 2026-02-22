@@ -30,3 +30,11 @@ export const dateFormatter = (date: string): string => {
 
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 };
+
+export const timeFormatter = (date: string) => {
+  const inputDate = new Date(date);
+
+  const hours = String(inputDate.getHours()).padStart(2, "0");
+  const minutes = String(inputDate.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+};

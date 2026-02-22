@@ -21,7 +21,7 @@ export default function Home() {
           selectedUser={selectedUser}
           setSelectedUser={setSelectedUser}
         />
-        <RightSidebar />
+        <RightSidebar selectedUser={selectedUser} />
       </div>
     </main>
   );
