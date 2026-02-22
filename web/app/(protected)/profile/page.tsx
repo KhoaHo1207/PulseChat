@@ -1,7 +1,6 @@
 "use client";
 
 import assets from "@/public/assets/assets";
-import { assert } from "console";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,8 +12,7 @@ export default function Profile() {
   const [bio, setBio] = useState("Hi everyone, I am using PulseChat");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setIsSubmitting(true);
     router.refresh();
   };
@@ -66,9 +64,7 @@ export default function Profile() {
           <button
             type="submit"
             className="cursor-pointer rounded-full bg-linear-to-r from-purple-400 to-violet-600 p-2 text-lg text-white"
-            onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-              handleSubmit(e)
-            }
+            onClick={() => handleSubmit()}
             disabled={isSubmitting}
           >
             Save
