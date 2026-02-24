@@ -2,6 +2,7 @@ import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 import { ApiStatus } from "../constants/apiStatus.js";
 import { v2 as cloudinary } from "cloudinary";
+import { getRealtimeServer, userSocketMap } from "../socket/index.js";
 export const getUsers = async (req, res) => {
   try {
     const currentUserId = req.user._id;
@@ -105,22 +106,39 @@ export const sendMessage = async (req, res) => {
     const { receiverId, text, image } = req.body;
     const senderId = req.user._id;
 
+    let imageUrl = null;
+
+    // 1️⃣ Upload image trước
     if (image) {
-      const result = await uploadImage(image, message._id);
-      message.image = result.secure_url;
+      const result = await uploadImage(image, senderId);
+      imageUrl = result.secure_url;
     }
 
     const message = await Message.create({
       senderId,
       receiverId,
-      text,
-      image: image ? result.secure_url : "",
+      text: text || null,
+      image: imageUrl,
+      seen: false,
     });
+
+    const populatedMessage = await message.populate([
+      { path: "senderId", select: "fullName profilePic" },
+      { path: "receiverId", select: "fullName profilePic" },
+    ]);
+
+    // 4️⃣ Emit realtime
+    const io = getRealtimeServer();
+    const receiverSocketId = userSocketMap[receiverId];
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", populatedMessage);
+    }
 
     return res.status(ApiStatus.CREATED).json({
       success: true,
       message: "Message sent successfully.",
-      results: message,
+      results: populatedMessage,
     });
   } catch (error) {
     console.log("sendMessage error:", error);
