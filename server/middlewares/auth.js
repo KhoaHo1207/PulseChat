@@ -25,36 +25,16 @@ export const protectRoute = async (req, res, next) => {
         message: "Unauthorized.",
       });
     }
-    if (user.refreshToken !== token) {
-      return res.status(ApiStatus.UNAUTHORIZED).json({
-        success: false,
-        message: "Unauthorized.",
-      });
-    }
+    // if (user.refreshToken !== token) {
+    //   return res.status(ApiStatus.UNAUTHORIZED).json({
+    //     success: false,
+    //     message: "Unauthorized.",
+    //   });
+    // }
     req.user = user;
     next();
   } catch (error) {
     console.error("protectRoute error:", error);
-    return res.status(ApiStatus.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: "Internal server error.",
-    });
-  }
-};
-
-export const checkAuth = async (req, res) => {
-  try {
-    return res.status(ApiStatus.OK).json({
-      success: true,
-      message: "Authenticated.",
-      results: {
-        id: req.user._id,
-        fullName: req.user.fullName,
-        email: req.user.email,
-      },
-    });
-  } catch (error) {
-    console.error("checkAuth error:", error);
     return res.status(ApiStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Internal server error.",

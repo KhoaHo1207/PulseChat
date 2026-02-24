@@ -118,3 +118,23 @@ export const signIn = async (req, res) => {
     });
   }
 };
+
+export const checkAuth = async (req, res) => {
+  try {
+    return res.status(ApiStatus.OK).json({
+      success: true,
+      message: "Authenticated.",
+      results: {
+        id: req.user._id,
+        fullName: req.user.fullName,
+        email: req.user.email,
+      },
+    });
+  } catch (error) {
+    console.error("checkAuth error:", error);
+    return res.status(ApiStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
+};
