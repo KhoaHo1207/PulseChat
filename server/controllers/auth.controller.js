@@ -13,7 +13,7 @@ export const signUp = async (req, res) => {
     });
   }
 
-  const { fullName, email, password } = validation.data;
+  const { fullName, email, password, bio } = validation.data;
 
   try {
     const existingUser = await User.findOne({ email }).lean();
@@ -24,19 +24,20 @@ export const signUp = async (req, res) => {
         message: "Email is already registered.",
       });
     }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
       fullName,
       email,
       password: hashedPassword,
+      bio,
     });
 
     return res.status(ApiStatus.CREATED).json({
       success: true,
       message: "Account created successfully.",
-      data: {
+      results: {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
