@@ -9,6 +9,12 @@ const trim = (value) => (typeof value === "string" ? value.trim() : value);
 const lowerCaseString = (value) =>
   typeof value === "string" ? value.trim().toLowerCase() : value;
 
+const formatZodErrors = (issues) =>
+  issues.map((issue) => ({
+    field: issue.path[0] ? String(issue.path[0]) : "body",
+    message: issue.message,
+  }));
+
 const signUpSchema = z
   .object({
     fullName: z.preprocess(
@@ -51,17 +57,39 @@ const signUpSchema = z
     path: ["confirmPassword"],
   });
 
-const formatZodErrors = (issues) =>
-  issues.map((issue) => ({
-    field: issue.path[0] ? String(issue.path[0]) : "body",
-    message: issue.message,
-  }));
+const signInSchema = z.object({
+  email: z.preprocess(
+    lowerCaseString,
+    z.string().email({
+      message: "Email must be valid.",
+    })
+  ),
+  password: z.string().min(MIN_PASSWORD_LENGTH, {
+    message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+  }),
+});
 
 export const validateSignUpPayload = (payload) => {
   const result = signUpSchema.safeParse(payload ?? {});
 
   if (result.success) {
     return { success: true, data: result.data };
+  }
+
+  return {
+    success: false,
+    errors: formatZodErrors(result.error.issues),
+  };
+};
+
+export const validateSignInPayload = (payload) => {
+  const result = signInSchema.safeParse(payload ?? {});
+
+  if (result.success) {
+    return {
+      success: true,
+      data: result.data,
+    };
   }
 
   return {

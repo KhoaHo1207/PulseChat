@@ -1,7 +1,14 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import { ApiStatus } from "../constants/apiStatus.js";
-import { validateSignUpPayload } from "../validators/auth.validator.js";
+import {
+  validateSignInPayload,
+  validateSignUpPayload,
+} from "../validators/auth.validator.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../middlewares/jwt.js";
 
 export const signUp = async (req, res) => {
   const validation = validateSignUpPayload(req.body);
@@ -47,7 +54,67 @@ export const signUp = async (req, res) => {
     console.error("signUp error:", error);
     return res.status(ApiStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Unable to create account.",
+      message: "Internal server error.",
+    });
+  }
+};
+
+export const signIn = async (req, res) => {
+  try {
+    const validation = validateSignInPayload(req.body);
+
+    if (!validation.success) {
+      return res.status(ApiStatus.BAD_REQUEST).json({
+        success: false,
+        errors: validation.errors,
+      });
+    }
+
+    const { email, password } = validation.data;
+
+    const user = await User.findOne({ email }).select("+password").lean();
+
+    if (!user) {
+      return res.status(ApiStatus.NOT_FOUND).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(ApiStatus.UNAUTHORIZED).json({
+        success: false,
+        message: "Invalid password",
+      });
+    }
+
+    const accessToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
+
+    await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: {
+          refreshToken,
+        },
+      },
+      { new: true }
+    );
+    return res.status(ApiStatus.OK).json({
+      success: true,
+      message: "Sign in successful.",
+      results: {
+        accessToken,
+        refreshToken,
+      },
+    });
+  } catch (error) {
+    console.error("signIn error:", error);
+    return res.status(ApiStatus.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: "Internal server error.",
     });
   }
 };
