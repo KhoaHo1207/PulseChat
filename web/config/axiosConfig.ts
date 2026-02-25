@@ -1,4 +1,3 @@
-const SERVER_API_URL = process.env.API_URL;
 import axios from "axios";
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;

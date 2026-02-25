@@ -1,13 +1,16 @@
 "use client";
 
+import { useAuth } from "@/contexts/AuthContext";
 import assets from "@/public/assets/assets";
 import { SignInFormData, signInSchema } from "@/schemas/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 export default function LoginForm() {
+  const { signIn } = useAuth();
   const {
     register,
     handleSubmit,
@@ -17,7 +20,13 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (data: SignInFormData) => {
-    console.log(data);
+    try {
+      await signIn(data);
+      toast.success("Login successful");
+    } catch (error: unknown) {
+      console.log(error);
+      toast.error(error.response.data.message || "Login failed");
+    }
   };
 
   return (

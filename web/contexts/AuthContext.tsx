@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setIsAuthLoading(false);
     }
-  }, []);
+  }, [authUser]);
 
   return (
     <AuthContext.Provider
