@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 const outfit = Outfit({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -27,12 +29,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.variable} antialiased`}>
-        <div
-          className="bg-contain bg-center min-h-screen"
-          style={{ backgroundImage: "url('/assets/bgImage.svg')" }}
-        >
-          {children}
-        </div>
+        <AuthProvider>
+          <div
+            className="min-h-screen bg-contain bg-center"
+            style={{ backgroundImage: "url('/assets/bgImage.svg')" }}
+          >
+            {children}
+          </div>
+          <Toaster position="top-center" />
+        </AuthProvider>
       </body>
     </html>
   );
